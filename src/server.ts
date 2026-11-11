@@ -3,6 +3,7 @@ import { z } from "zod";
 import "dotenv/config";
 import { env } from "node:process";
 import { createClient } from "@supabase/supabase-js";
+import Products from "./views/products.js";
 
 const url = env.SUPABASE_URL;
 const key = env.SUPABASE_SECRET_KEY;
@@ -266,6 +267,69 @@ export const app = new Skybridge({
               {
                 type: "text",
                 text: `Товар ${productId} удалён из корзины`,
+              },
+            ],
+          };
+        },
+      )
+      .registerTool(
+        {
+          name: "get-product-details",
+          description: "Get product details and related products",
+          inputSchema: {
+            productId: z.number().int().positive(),
+          },
+          annotations: {
+            readOnlyHint: true,
+          },
+        },
+        async ({ productId }) => {
+          const { data: product, error: productError } = await supabase
+            .from("products")
+            .select("id, title, price, image, description,category")
+            .eq("id", productId)
+            .single();
+
+          if (productError) {
+            throw new Error(productError.message);
+          }
+
+          const { data: related, error: relatedError } = await supabase
+            .from("products")
+            .select("id, title, price, image, category")
+            .eq("category", product.category)
+            .neq("id", productId)
+            .limit(3);
+
+          if (relatedError) {
+            throw new Error(relatedError.message);
+          }
+
+          const ProductDetailsSchema = z.object({
+            id: z.number(),
+            title: z.string(),
+            price: z.number(),
+            image: z.string(),
+            description: z.string(),
+            category: z.string(),
+          });
+
+          const validatedProduct = ProductDetailsSchema.parse(product);
+
+          const relatedProducts = z.array(ProductSchema).parse(related ?? []);
+
+          return {
+            structuredContent: {
+              product: validatedProduct,
+              relatedProducts,
+            },
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  product: validatedProduct,
+                  relatedProducts,
+                }),
               },
             ],
           };

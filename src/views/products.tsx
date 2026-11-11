@@ -7,6 +7,9 @@ export default function Products() {
   const { output, isPending } = useToolInfo<"get-products">();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState<number | null>(
+    null,
+  );
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
 
@@ -26,6 +29,12 @@ export default function Products() {
 
   const { callTool: removeFromCart, isPending: isRemoving } =
     useCallTool("remove-from-cart");
+
+  const {
+    callTool: getProductDetails,
+    data: detailsData,
+    isPending: isLoadingDetails,
+  } = useCallTool("get-product-details");
 
   const products = output?.products ?? [];
 
@@ -220,6 +229,63 @@ export default function Products() {
           <h3>{product.title}</h3>
 
           <p>Цена: ${product.price}</p>
+
+          <button
+            disabled={isLoadingDetails}
+            onClick={() => {
+              if (selectedProductId === product.id) {
+                setSelectedProductId(null);
+                return;
+              }
+
+              setSelectedProductId(product.id);
+
+              getProductDetails({
+                productId: product.id,
+              });
+            }}
+          >
+            {selectedProductId === product.id
+              ? "Скрыть подробности"
+              : "Подробности"}
+          </button>
+
+          {selectedProductId === product.id && (
+            <div
+              style={{
+                padding: 12,
+                marginTop: 12,
+                background: "#f5f5f5",
+                borderRadius: 8,
+              }}
+            >
+              {isLoadingDetails ? (
+                <p>Загрузка информации...</p>
+              ) : detailsData?.structuredContent?.product?.id === product.id ? (
+                <>
+                  <h4>Описание товара</h4>
+
+                  <p>{detailsData.structuredContent.product.description}</p>
+
+                  <p>
+                    Категория: {detailsData.structuredContent.product.category}
+                  </p>
+
+                  <h4>Похожие товары</h4>
+
+                  {detailsData.structuredContent.relatedProducts.map(
+                    (related) => (
+                      <p key={related.id}>
+                        {related.title} - ${related.price}
+                      </p>
+                    ),
+                  )}
+                </>
+              ) : (
+                <p>Не удалось показать информацию о товаре</p>
+              )}
+            </div>
+          )}
 
           <button
             disabled={isAdding}
