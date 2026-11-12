@@ -285,12 +285,16 @@ export const app = new Skybridge({
         async ({ productId }) => {
           const { data: product, error: productError } = await supabase
             .from("products")
-            .select("id, title, price, image, description,category")
+            .select("id, title, price, image, description, category")
             .eq("id", productId)
-            .single();
+            .maybeSingle();
 
           if (productError) {
             throw new Error(productError.message);
+          }
+
+          if (!product) {
+            throw new Error(`Товар с ID ${productId} не найден`);
           }
 
           const { data: related, error: relatedError } = await supabase
