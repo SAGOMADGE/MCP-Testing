@@ -7,9 +7,13 @@ export default function Products() {
   const { output, isPending } = useToolInfo<"get-products">();
 
   const [searchQuery, setSearchQuery] = useState("");
+
   const [selectedProductId, setSelectedProductId] = useState<number | null>(
     null,
   );
+
+  const [expandedCardId, setExpandedCardId] = useState<number | null>(null);
+
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
 
@@ -83,7 +87,6 @@ export default function Products() {
   return (
     <div style={{ padding: 24 }}>
       <h2>Каталог товаров</h2>
-
       <input
         type="text"
         placeholder="Поиск товаров..."
@@ -96,7 +99,6 @@ export default function Products() {
           marginBottom: 16,
         }}
       />
-
       <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
         <select
           value={selectedCategory}
@@ -120,14 +122,11 @@ export default function Products() {
           style={{ padding: 8, width: 140 }}
         />
       </div>
-
       <p>Найдено товаров: {filteredProducts.length}</p>
-
       {/* Кнопка просмотра корзины */}
       <button onClick={() => getCart()} disabled={isLoadingCart}>
         {isLoadingCart ? "Загрузка корзины..." : "Посмотреть корзину"}
       </button>
-
       {/* Содержимое корзины */}
       {cartData && (
         <div>
@@ -204,6 +203,9 @@ export default function Products() {
           </h3>
         </div>
       )}
+      {/*
+      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+      */}
 
       {/* Каталог товаров */}
       {filteredProducts.map((product) => (
@@ -233,11 +235,13 @@ export default function Products() {
           <button
             disabled={isLoadingDetails}
             onClick={() => {
-              if (selectedProductId === product.id) {
+              if (expandedCardId === product.id) {
+                setExpandedCardId(null);
                 setSelectedProductId(null);
                 return;
               }
 
+              setExpandedCardId(product.id);
               setSelectedProductId(product.id);
 
               getProductDetails({
@@ -245,12 +249,12 @@ export default function Products() {
               });
             }}
           >
-            {selectedProductId === product.id
-              ? "Скрыть подробности"
-              : "Подробности"}
+            {expandedCardId === product.id
+              ? "Скрывать подробности"
+              : "Подробнее"}
           </button>
 
-          {selectedProductId === product.id && (
+          {expandedCardId === product.id && (
             <div
               style={{
                 padding: 12,
@@ -261,9 +265,10 @@ export default function Products() {
             >
               {isLoadingDetails ? (
                 <p>Загрузка информации...</p>
-              ) : detailsData?.structuredContent?.product?.id === product.id ? (
+              ) : detailsData?.structuredContent?.product?.id ===
+                selectedProductId ? (
                 <>
-                  <h4>Описание товара</h4>
+                  <h4>{detailsData.structuredContent.product.title}</h4>
 
                   <p>{detailsData.structuredContent.product.description}</p>
 
@@ -273,12 +278,40 @@ export default function Products() {
 
                   <h4>Похожие товары</h4>
 
-                  {detailsData.structuredContent.relatedProducts.map(
-                    (related) => (
-                      <p key={related.id}>
-                        {related.title} - ${related.price}
-                      </p>
-                    ),
+                  {detailsData.structuredContent.relatedProducts.length ===
+                  0 ? (
+                    <p>Похожих товаров нет.</p>
+                  ) : (
+                    detailsData.structuredContent.relatedProducts.map(
+                      (related) => (
+                        <div
+                          key={related.id}
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            marginBottom: 8,
+                          }}
+                        >
+                          <span>
+                            {related.title} - ${related.price}
+                          </span>
+
+                          <button
+                            disabled={isLoadingDetails}
+                            onClick={() => {
+                              setSelectedProductId(related.id);
+
+                              getProductDetails({
+                                productId: related.id,
+                              });
+                            }}
+                          >
+                            Изучить товар
+                          </button>
+                        </div>
+                      ),
+                    )
                   )}
                 </>
               ) : (

@@ -3,7 +3,6 @@ import { z } from "zod";
 import "dotenv/config";
 import { env } from "node:process";
 import { createClient } from "@supabase/supabase-js";
-import Products from "./views/products.js";
 
 const url = env.SUPABASE_URL;
 const key = env.SUPABASE_SECRET_KEY;
