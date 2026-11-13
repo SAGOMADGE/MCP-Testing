@@ -2,6 +2,8 @@ import { useToolInfo, useCallTool } from "@/helpers.js";
 
 import { useState } from "react";
 
+import ScenarioPlanner from "@/components/ScenarioPlanner.js";
+
 export default function Products() {
   // 1. Получаем каталог товаров
   const { output, isPending } = useToolInfo<"get-products">();
@@ -122,7 +124,11 @@ export default function Products() {
           style={{ padding: 8, width: 140 }}
         />
       </div>
+
       <p>Найдено товаров: {filteredProducts.length}</p>
+
+      <ScenarioPlanner products={products} />
+
       {/* Кнопка просмотра корзины */}
       <button onClick={() => getCart()} disabled={isLoadingCart}>
         {isLoadingCart ? "Загрузка корзины..." : "Посмотреть корзину"}
