@@ -3,6 +3,7 @@ import { z } from "zod";
 import "dotenv/config";
 import { env } from "node:process";
 import { createClient } from "@supabase/supabase-js";
+import { incrementCartQuantity } from "./lib/cart-quantity.js";
 
 const url = env.SUPABASE_URL;
 const key = env.SUPABASE_SECRET_KEY;
@@ -30,6 +31,10 @@ const CartItemSchema = z.object({
     price: z.number(),
     image: z.string(),
   }),
+});
+
+const CartQuantitySchema = z.object({
+  quantity: z.number().int().positive(),
 });
 
 export const app = new Skybridge({
@@ -96,52 +101,57 @@ export const app = new Skybridge({
             throw new Error("DEMO_CART_ID не найден в .env");
           }
 
-          // 2. Проверяем, есть ли уже товар в корзине
-          const { data: existingItem, error: readError } = await supabase
-            .from("cart_items")
-            .select("quantity")
-            .eq("cart_id", cartId)
-            .eq("product_id", productId)
-            .maybeSingle();
+          const savedQuantity = await incrementCartQuantity({
+            async readQuantity() {
+              const { data, error } = await supabase
+                .from("cart_items")
+                .select("quantity")
+                .eq("cart_id", cartId)
+                .eq("product_id", productId)
+                .maybeSingle();
 
-          if (readError) {
-            throw new Error(readError.message);
-          }
+              if (error) throw new Error(error.message);
+              return data === null ? null : CartQuantitySchema.parse(data).quantity;
+            },
+            async insert(newQuantity) {
+              const { data, error } = await supabase
+                .from("cart_items")
+                .insert({ cart_id: cartId, product_id: productId, quantity: newQuantity })
+                .select("quantity")
+                .single();
 
-          // 3. Вычисляем новое количество
-          const newQuantity = (existingItem?.quantity ?? 0) + quantity;
+              // Another request inserted this product after our read.
+              if (error?.code === "23505") return null;
+              if (error) throw new Error(error.message);
+              return CartQuantitySchema.parse(data).quantity;
+            },
+            async compareAndSet(currentQuantity, newQuantity) {
+              const { data, error } = await supabase
+                .from("cart_items")
+                .update({ quantity: newQuantity })
+                .eq("cart_id", cartId)
+                .eq("product_id", productId)
+                .eq("quantity", currentQuantity)
+                .select("quantity")
+                .maybeSingle();
 
-          // 4. Сохраняем товар в Supabase
-          const { data: savedItem, error: saveError } = await supabase
-            .from("cart_items")
-            .upsert(
-              {
-                cart_id: cartId,
-                product_id: productId,
-                quantity: newQuantity,
-              },
-              {
-                onConflict: "cart_id,product_id",
-              },
-            )
-            .select("product_id, quantity")
-            .single();
-
-          if (saveError) {
-            throw new Error(saveError.message);
-          }
+              if (error) throw new Error(error.message);
+              // No row matched: reread before trying to add again.
+              return data === null ? null : CartQuantitySchema.parse(data).quantity;
+            },
+          }, quantity);
 
           // 5. Возвращаем результат React-интерфейсу
           return {
             structuredContent: {
-              productId: savedItem.product_id,
-              quantity: savedItem.quantity,
+              productId,
+              quantity: savedQuantity,
               saved: true,
             },
             content: [
               {
                 type: "text",
-                text: `Товар ${productId} добавлен. Количество: ${savedItem.quantity}`,
+                text: `Товар ${productId} добавлен. Количество: ${savedQuantity}`,
               },
             ],
           };

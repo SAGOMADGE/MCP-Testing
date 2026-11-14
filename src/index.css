@@ -453,10 +453,15 @@
 }
 
 .shopping-app .shop-notice {
+  margin-block: 12px;
   padding: 14px 16px;
   border-left: 3px solid var(--shop-border);
   border-radius: 6px;
   font-size: 14px;
+}
+
+.shopping-app .shop-notice .shop-button {
+  margin-top: 12px;
 }
 
 .shopping-app .shop-notice--accent {
@@ -544,6 +549,36 @@
 }
 
 @media (max-width: 420px) {
+  /* Keep natural document height: the MCP host owns the iframe height limit. */
+  .shopping-app {
+    padding: 12px;
+  }
+
+  .shopping-app :where(.shop-panel, .shop-product-card, .shop-scenario-card) {
+    padding: 12px;
+  }
+
+  .shopping-app :where(.shop-toolbar, .shop-product-grid, .shop-scenario-grid) {
+    gap: 12px;
+  }
+
+  .shopping-app :where(.shop-header, .shop-actions, .shop-planner-region, .shop-cart) {
+    margin-bottom: 16px;
+  }
+
+  .shopping-app .shop-product-image {
+    min-height: 140px;
+    padding: 12px;
+  }
+
+  .shopping-app .shop-product-image img {
+    height: 128px;
+  }
+
+  .shopping-app .shop-cart-item {
+    padding-block: 12px;
+  }
+
   .shopping-app .shop-actions > .shop-button {
     width: 100%;
   }
