@@ -1,12 +1,15 @@
 import { useToolInfo, useCallTool } from "@/helpers.js";
+import "@/index.css";
 
-import { useState } from "react";
+import { useId, useState } from "react";
+import { useUser } from "skybridge/web";
 
 import ScenarioPlanner from "@/components/ScenarioPlanner.js";
 
 export default function Products() {
   // 1. Получаем каталог товаров
   const { output, isPending } = useToolInfo<"get-products">();
+  const { theme } = useUser();
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -18,6 +21,8 @@ export default function Products() {
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
+  const [isPlannerOpen, setIsPlannerOpen] = useState(false);
+  const plannerId = useId();
 
   // 2. Инструмент добавления товара
   const { callTool: addToCart, isPending: isAdding } =
@@ -83,26 +88,34 @@ export default function Products() {
   }
 
   if (isPending) {
-    return <p>Загрузка товаров...</p>;
+    return (
+      <div className="shopping-app" data-theme={theme}>
+        <p className="shop-empty" role="status">Загрузка товаров...</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Каталог товаров</h2>
-      <input
+    <main className="shopping-app" data-theme={theme}>
+      <header className="shop-header">
+        <h1 className="shop-title">Каталог товаров</h1>
+        <p className="shop-muted">Выбирайте товары и планируйте покупки в рамках бюджета.</p>
+      </header>
+      <div className="shop-panel shop-toolbar">
+        <label className="shop-field shop-field--search">
+          <span className="shop-label">Поиск товаров</span>
+          <input
+        className="shop-input"
         type="text"
         placeholder="Поиск товаров..."
         value={searchQuery}
         onChange={(event) => setSearchQuery(event.target.value)}
-        style={{
-          padding: 10,
-          width: "100%",
-          maxWidth: 350,
-          marginBottom: 16,
-        }}
       />
-      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-        <select
+        </label>
+        <label className="shop-field">
+          <span className="shop-label">Категория</span>
+          <select
+          className="shop-select"
           value={selectedCategory}
           onChange={(event) => setSelectedCategory(event.target.value)}
         >
@@ -114,40 +127,65 @@ export default function Products() {
             </option>
           ))}
         </select>
-
-        <input
+        </label>
+        <label className="shop-field">
+          <span className="shop-label">Цена до ($)</span>
+          <input
+          className="shop-input"
           type="number"
           min="0"
           placeholder="Цена до ($)"
           value={maxPrice}
           onChange={(event) => setMaxPrice(event.target.value)}
-          style={{ padding: 8, width: 140 }}
         />
+        </label>
       </div>
 
-      <p>Найдено товаров: {filteredProducts.length}</p>
+      <p className="shop-results" role="status">Найдено товаров: {filteredProducts.length}</p>
 
-      <ScenarioPlanner products={products} />
-
+      <div className="shop-actions">
+        <button
+          className="shop-button shop-planner-toggle"
+          type="button"
+          aria-expanded={isPlannerOpen}
+          aria-controls={plannerId}
+          onClick={() => setIsPlannerOpen((isOpen) => !isOpen)}
+        >
+          {isPlannerOpen ? "Скрыть планировщик" : "Спланировать покупки"}
+        </button>
       {/* Кнопка просмотра корзины */}
-      <button onClick={() => getCart()} disabled={isLoadingCart}>
+      <button className="shop-button" type="button" onClick={() => getCart()} disabled={isLoadingCart}>
         {isLoadingCart ? "Загрузка корзины..." : "Посмотреть корзину"}
       </button>
+      </div>
+      {/* Не размонтируем планировщик, чтобы сохранить бюджет и категории. */}
+      <div className="shop-planner-region" id={plannerId} hidden={!isPlannerOpen}>
+        <ScenarioPlanner products={products} />
+      </div>
       {/* Содержимое корзины */}
       {cartData && (
-        <div>
-          <h2>Моя корзина</h2>
+        <section className="shop-panel shop-cart" aria-label="Моя корзина">
+          <h2 className="shop-section-title">Моя корзина</h2>
 
           {cartData.structuredContent.items.length === 0 && (
-            <p>Корзина пуста</p>
+            <p className="shop-empty">Корзина пуста. Добавьте товары из каталога.</p>
           )}
 
+          <div className="shop-cart-items">
           {cartData.structuredContent.items.map((item) => (
-            <div key={item.product_id}>
-              <h3>{item.products.title}</h3>
+            <div className="shop-cart-item" key={item.product_id}>
+              <div className="shop-cart-info">
+                <h3 className="shop-card-title">{item.products.title}</h3>
+                <p className="shop-muted">Цена: ${item.products.price.toFixed(2)}</p>
+                <p className="shop-cart-price">Сумма: ${(item.products.price * item.quantity).toFixed(2)}</p>
+              </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div className="shop-cart-controls">
+              <div className="shop-quantity" role="group" aria-label={`Количество: ${item.products.title}`}>
                 <button
+                  className="shop-button shop-button--small"
+                  type="button"
+                  aria-label={`Уменьшить количество: ${item.products.title}`}
                   disabled={isUpdating || item.quantity <= 1}
                   onClick={() =>
                     handleQuantityChange(item.product_id, item.quantity - 1)
@@ -156,9 +194,12 @@ export default function Products() {
                   −
                 </button>
 
-                <span>{item.quantity}</span>
+                <span aria-live="polite">{item.quantity}</span>
 
                 <button
+                  className="shop-button shop-button--small"
+                  type="button"
+                  aria-label={`Увеличить количество: ${item.products.title}`}
                   disabled={isUpdating}
                   onClick={() =>
                     handleQuantityChange(item.product_id, item.quantity + 1)
@@ -169,6 +210,8 @@ export default function Products() {
               </div>
 
               <button
+                className="shop-button shop-button--danger"
+                type="button"
                 disabled={isRemoving}
                 onClick={() =>
                   removeFromCart(
@@ -191,14 +234,12 @@ export default function Products() {
               >
                 {isRemoving ? "Удаляем..." : "Удалить из корзины"}
               </button>
-
-              <p>Цена: ${item.products.price}</p>
-
-              <p>Сумма: ${(item.products.price * item.quantity).toFixed(2)}</p>
+              </div>
             </div>
           ))}
+          </div>
 
-          <h3>
+          <p className="shop-cart-total">
             Итого: $
             {cartData.structuredContent.items
               .reduce(
@@ -206,39 +247,37 @@ export default function Products() {
                 0,
               )
               .toFixed(2)}
-          </h3>
-        </div>
+          </p>
+        </section>
       )}
-      {/*
-      ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      */}
 
       {/* Каталог товаров */}
+      {filteredProducts.length === 0 && (
+        <p className="shop-empty">Товары не найдены. Попробуйте изменить поиск или фильтры.</p>
+      )}
+      <div className="shop-product-grid">
       {filteredProducts.map((product) => (
-        <div
+        <article
+          className="shop-product-card"
           key={product.id}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            padding: 12,
-            marginTop: 12,
-          }}
         >
+          <div className="shop-product-image">
           <img
             src={product.image}
             alt={product.title}
-            style={{
-              width: 120,
-              height: 120,
-              objectFit: "contain",
-            }}
+            loading="lazy"
           />
+          </div>
 
-          <h3>{product.title}</h3>
+          <p className="shop-product-category">{product.category}</p>
+          <h2 className="shop-product-title">{product.title}</h2>
 
-          <p>Цена: ${product.price}</p>
+          <p className="shop-product-price">${product.price.toFixed(2)}</p>
 
           <button
+            className="shop-button"
+            type="button"
+            aria-expanded={expandedCardId === product.id}
             disabled={isLoadingDetails}
             onClick={() => {
               if (expandedCardId === product.id) {
@@ -256,54 +295,46 @@ export default function Products() {
             }}
           >
             {expandedCardId === product.id
-              ? "Скрывать подробности"
+              ? "Скрыть подробности"
               : "Подробнее"}
           </button>
 
           {expandedCardId === product.id && (
             <div
-              style={{
-                padding: 12,
-                marginTop: 12,
-                background: "#f5f5f5",
-                borderRadius: 8,
-              }}
+              className="shop-product-details"
             >
               {isLoadingDetails ? (
-                <p>Загрузка информации...</p>
+                <p className="shop-muted" role="status">Загрузка информации...</p>
               ) : detailsData?.structuredContent?.product?.id ===
                 selectedProductId ? (
                 <>
-                  <h4>{detailsData.structuredContent.product.title}</h4>
+                  <h3 className="shop-card-title">{detailsData.structuredContent.product.title}</h3>
 
                   <p>{detailsData.structuredContent.product.description}</p>
 
-                  <p>
+                  <p className="shop-muted">
                     Категория: {detailsData.structuredContent.product.category}
                   </p>
 
-                  <h4>Похожие товары</h4>
+                  <h3 className="shop-card-title">Похожие товары</h3>
 
                   {detailsData.structuredContent.relatedProducts.length ===
                   0 ? (
-                    <p>Похожих товаров нет.</p>
+                    <p className="shop-muted">Похожих товаров нет.</p>
                   ) : (
                     detailsData.structuredContent.relatedProducts.map(
                       (related) => (
                         <div
+                          className="shop-related-item"
                           key={related.id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            marginBottom: 8,
-                          }}
                         >
                           <span>
-                            {related.title} - ${related.price}
+                            {related.title} — ${related.price.toFixed(2)}
                           </span>
 
                           <button
+                            className="shop-button shop-button--small"
+                            type="button"
                             disabled={isLoadingDetails}
                             onClick={() => {
                               setSelectedProductId(related.id);
@@ -321,12 +352,14 @@ export default function Products() {
                   )}
                 </>
               ) : (
-                <p>Не удалось показать информацию о товаре</p>
+                <p className="shop-status shop-status--danger">Не удалось показать информацию о товаре</p>
               )}
             </div>
           )}
 
           <button
+            className="shop-button shop-button--primary shop-button--wide"
+            type="button"
             disabled={isAdding}
             onClick={() =>
               addToCart(
@@ -349,8 +382,9 @@ export default function Products() {
           >
             {isAdding ? "Добавляем..." : "Добавить в корзину"}
           </button>
-        </div>
+        </article>
       ))}
-    </div>
+      </div>
+    </main>
   );
 }
