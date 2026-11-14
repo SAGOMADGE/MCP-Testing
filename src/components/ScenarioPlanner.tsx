@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
 import {
   calculateScenarios,
+  parseBudget,
+  toCents,
   type Product,
   type Strategy,
 } from "../lib/scenario-modeler.js";
@@ -16,36 +18,41 @@ const strategyNames: Record<Strategy, string> = {
   premium: "Премиальный",
 };
 
-export default function ScenarioPlanner({ products }: Props) {
-  // 1. Бюджет пользователя
-  const [budgetInput, setBudgetInput] = useState("500");
+const strategyDescriptions: Record<Strategy, string> = {
+  economy: "Самый дешёвый товар в каждой категории.",
+  balanced:
+    "Средний товар по порядку цен в каждой категории. При чётном количестве — более дешёвый из двух средних.",
+  premium: "Самый дорогой товар в каждой категории.",
+};
 
-  // 2. Категории из загруженного каталога
+function formatMoney(cents: number) {
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+export default function ScenarioPlanner({ products }: Props) {
+  const budgetErrorId = useId();
+  const [budgetInput, setBudgetInput] = useState("500");
+  const budgetCents = parseBudget(budgetInput);
+
   const categories = useMemo(
     () => [...new Set(products.map((p) => p.category))].sort(),
     [products],
   );
 
-  // null означает, что выбраны все категории
-  const [chosenCategories, setChosenCategories] = useState<string[] | null>(
-    null,
-  );
-
+  // null означает, что выбраны все категории загруженного каталога.
+  const [chosenCategories, setChosenCategories] = useState<string[] | null>(null);
   const selectedCategories = chosenCategories ?? categories;
+  // Исчезнувшую из каталога выбранную категорию можно снять вручную.
+  const categoryOptions = [
+    ...new Set([...categories, ...selectedCategories]),
+  ].sort();
 
-  // 3. Рассчитываем три сценария
-  const scenarios = useMemo(
-    () => calculateScenarios(products, selectedCategories),
-    [products, selectedCategories],
+  const { scenarios, missingCategories, recommendedStrategy } = useMemo(
+    () => calculateScenarios(products, selectedCategories, budgetCents),
+    [products, selectedCategories, budgetCents],
   );
+  const isComplete = missingCategories.length === 0;
 
-  // 4. Проверяем бюджет
-  const budget = Number(budgetInput);
-
-  const isValidBudget =
-    budgetInput.trim() !== "" && Number.isFinite(budget) && budget > 0;
-
-  // 5. Выбор категории
   function toggleCategory(category: string) {
     setChosenCategories(
       selectedCategories.includes(category)
@@ -55,102 +62,128 @@ export default function ScenarioPlanner({ products }: Props) {
   }
 
   return (
-    <section
-      style={{
-        padding: 20,
-        marginTop: 24,
-        border: "1px solid #ddd",
-        borderRadius: 12,
-      }}
-    >
-      <h2>Планировщик покупок</h2>
+    <section className="shop-panel shop-planner">
+      <h2 className="shop-section-title">Планировщик покупок</h2>
+      <p className="shop-muted">
+        Сравните три набора: по одному товару из каждой выбранной категории.
+      </p>
 
-      <p>Сравните три варианта покупок.</p>
-
-      <label>
+      <label className="shop-field">
         Ваш бюджет ($):
         <input
-          type="number"
-          min="0"
-          step="any"
+          type="text"
+          inputMode="decimal"
           value={budgetInput}
           onChange={(e) => setBudgetInput(e.target.value)}
-          style={{
-            display: "block",
-            padding: 8,
-            marginTop: 8,
-          }}
+          aria-invalid={budgetCents === null}
+          aria-describedby={budgetCents === null ? budgetErrorId : undefined}
+          className="shop-input"
         />
       </label>
 
-      {!isValidBudget && (
-        <p style={{ color: "crimson" }}>Введите положительный бюджет.</p>
+      {budgetCents === null && (
+        <p id={budgetErrorId} className="shop-notice shop-notice--danger">
+          Введите положительный бюджет, например 500 или 500,50 (не более двух
+          знаков после запятой).
+        </p>
       )}
 
-      <h3>Категории товаров</h3>
+      <fieldset className="shop-fieldset">
+        <legend className="shop-label">Категории товаров</legend>
+        <div className="shop-checkbox-group">
+          {categoryOptions.map((category) => (
+            <label key={category} className="shop-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(category)}
+                onChange={() => toggleCategory(category)}
+              />{" "}
+              {category}
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
-      {categories.map((category) => (
-        <label key={category} style={{ display: "block", marginBottom: 8 }}>
-          <input
-            type="checkbox"
-            checked={selectedCategories.includes(category)}
-            onChange={() => toggleCategory(category)}
-          />{" "}
-          {category}
-        </label>
-      ))}
+      <div aria-live="polite">
+        {products.length === 0 && (
+          <p className="shop-empty">В каталоге пока нет товаров для сравнения.</p>
+        )}
+        {selectedCategories.length === 0 && products.length > 0 && (
+          <p className="shop-empty">Выберите хотя бы одну категорию.</p>
+        )}
+        {!isComplete && (
+          <p className="shop-notice shop-notice--danger">
+            Нет товаров в категориях: {missingCategories.join(", ")}. Наборы
+            неполные: ниже указана только стоимость найденных товаров. Оценка
+            бюджета и рекомендация недоступны.
+          </p>
+        )}
+        {recommendedStrategy !== null && (
+          <p className="shop-notice shop-notice--accent">
+            <strong>Рекомендуем: {strategyNames[recommendedStrategy]}.</strong>{" "}
+            Это самый дорогой из трёх наборов, который укладывается в бюджет.
+            При равной стоимости выбираем более экономную стратегию. Более
+            высокая цена не означает более высокое качество.
+          </p>
+        )}
+        {isComplete &&
+          budgetCents !== null &&
+          scenarios.length > 0 &&
+          recommendedStrategy === null && (
+            <p className="shop-notice shop-notice--danger">
+              Ни один полный набор не укладывается в бюджет. Даже для экономного
+              нужно {formatMoney(scenarios[0].totalCents)} — не хватает{" "}
+              {formatMoney(scenarios[0].totalCents - budgetCents)}. Увеличьте бюджет
+              или сократите число категорий.
+            </p>
+          )}
+      </div>
 
-      {selectedCategories.length === 0 ? (
-        <p>Выберите хотя бы одну категорию.</p>
-      ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-            gap: 12,
-            marginTop: 20,
-          }}
-        >
-          {scenarios.map((scenario) => {
-            const remaining = budget - scenario.total;
+      {scenarios.length > 0 && (
+        <div className="shop-scenario-grid">
+          {scenarios.map((scenario) => (
+            <div
+              key={scenario.strategy}
+              className={`shop-scenario-card${scenario.strategy === recommendedStrategy ? " shop-scenario-card--recommended" : ""}`}
+            >
+              <h3 className="shop-card-title">{strategyNames[scenario.strategy]}</h3>
+              {scenario.strategy === recommendedStrategy && (
+                <span className="shop-badge">Рекомендуем</span>
+              )}
+              <p className="shop-muted">{strategyDescriptions[scenario.strategy]}</p>
 
-            return (
-              <div
-                key={scenario.strategy}
-                style={{
-                  padding: 12,
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                }}
-              >
-                <h3>{strategyNames[scenario.strategy]}</h3>
+              {scenario.products.length === 0 ? (
+                <p className="shop-empty">В выбранных категориях нет товаров.</p>
+              ) : (
+                <ul className="shop-scenario-items">
+                  {scenario.products.map((product) => (
+                    <li key={product.id}>
+                      <strong>{product.category}:</strong> {product.title} —{" "}
+                      {formatMoney(toCents(product.price))}
+                    </li>
+                  ))}
+                </ul>
+              )}
 
-                {scenario.products.map((product) => (
-                  <p key={product.id}>
-                    {product.title} — ${product.price.toFixed(2)}
-                  </p>
-                ))}
+              <hr />
+              <p className="shop-scenario-total">
+                <strong>
+                  {isComplete ? "Стоимость" : "Стоимость найденных товаров"}:{" "}
+                  {formatMoney(scenario.totalCents)}
+                </strong>
+              </p>
 
-                <hr />
-
-                <p>
-                  <strong>Стоимость: ${scenario.total.toFixed(2)}</strong>
+              {scenario.remainingCents !== null && (
+                <p
+                  className={`shop-status ${scenario.remainingCents >= 0 ? "shop-status--success" : "shop-status--danger"}`}
+                >
+                  {scenario.remainingCents >= 0
+                    ? `В бюджете. Останется: ${formatMoney(scenario.remainingCents)}`
+                    : `Сверх бюджета. Не хватает: ${formatMoney(-scenario.remainingCents)}`}
                 </p>
-
-                {isValidBudget && (
-                  <p
-                    style={{
-                      color: remaining >= 0 ? "green" : "crimson",
-                    }}
-                  >
-                    {remaining >= 0
-                      ? `Останется: $${remaining.toFixed(2)}`
-                      : `Не хватает: $${Math.abs(remaining).toFixed(2)}`}
-                  </p>
-                )}
-              </div>
-            );
-          })}
+              )}
+            </div>
+          ))}
         </div>
       )}
     </section>

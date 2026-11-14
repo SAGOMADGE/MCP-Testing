@@ -1,59 +1,589 @@
-@import url("https://fonts.googleapis.com/css2?family=Mozilla+Text:wght@400..700&display=swap");
 @import "tailwindcss";
-@import "tw-animate-css";
 @import "@alpic-ai/ui/theme";
 
 @source "../node_modules/@alpic-ai/ui/src";
 
-@theme {
-  --font-mozilla: "Mozilla Text", serif;
-  --animate-float: float 3s ease-in-out infinite;
-  --animate-twirl: twirl 20s ease-in-out infinite;
-  --animate-aurora: aurora 20s ease-in-out infinite;
-  --animate-gradient-flow: gradient-flow 6s linear infinite;
+/* Scoped tokens keep the storefront independent of the host's global styles. */
+.shopping-app {
+  --shop-bg: #f5f7f9;
+  --shop-surface: #ffffff;
+  --shop-subtle: #f0f4f6;
+  --shop-text: #202b36;
+  --shop-muted: #596675;
+  --shop-border: #dce3e8;
+  --shop-input-border: #8795a3;
+  --shop-accent: #23675f;
+  --shop-accent-hover: #194f49;
+  --shop-accent-text: #ffffff;
+  --shop-accent-soft: #e8f3ef;
+  --shop-success: #24683e;
+  --shop-danger: #a33139;
+  --shop-danger-soft: #fff1f2;
+  color-scheme: light;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1120px;
+  margin-inline: auto;
+  padding: clamp(16px, 3vw, 32px);
+  background: var(--shop-bg);
+  color: var(--shop-text);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
-@keyframes gradient-flow {
-  0% {
-    background-position: 200% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
+.shopping-app[data-theme="dark"] {
+  --shop-bg: #151b22;
+  --shop-surface: #202832;
+  --shop-subtle: #29333f;
+  --shop-text: #edf2f7;
+  --shop-muted: #b0bdca;
+  --shop-border: #3c4856;
+  --shop-input-border: #7c8b9b;
+  --shop-accent: #91d1c6;
+  --shop-accent-hover: #b2e3da;
+  --shop-accent-text: #142d28;
+  --shop-accent-soft: #233c38;
+  --shop-success: #9cdeb3;
+  --shop-danger: #ffabb2;
+  --shop-danger-soft: #43292f;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  .shopping-app:not([data-theme]) {
+    --shop-bg: #151b22;
+    --shop-surface: #202832;
+    --shop-subtle: #29333f;
+    --shop-text: #edf2f7;
+    --shop-muted: #b0bdca;
+    --shop-border: #3c4856;
+    --shop-input-border: #7c8b9b;
+    --shop-accent: #91d1c6;
+    --shop-accent-hover: #b2e3da;
+    --shop-accent-text: #142d28;
+    --shop-accent-soft: #233c38;
+    --shop-success: #9cdeb3;
+    --shop-danger: #ffabb2;
+    --shop-danger-soft: #43292f;
+    color-scheme: dark;
   }
 }
 
-@keyframes aurora {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
+.shopping-app *,
+.shopping-app *::before,
+.shopping-app *::after {
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.shopping-app [hidden] {
+  display: none !important;
+}
+
+.shopping-app :where(h1, h2, h3, h4, p, ul, fieldset) {
+  margin: 0;
+}
+
+.shopping-app :where(button, input, select) {
+  font: inherit;
+}
+
+.shopping-app :where(button, input, select):focus-visible {
+  outline: 3px solid var(--shop-accent);
+  outline-offset: 3px;
+}
+
+.shopping-app .shop-header {
+  margin-bottom: 24px;
+}
+
+.shopping-app .shop-title {
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+.shopping-app .shop-section-title {
+  font-size: 21px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+
+.shopping-app :where(.shop-card-title, .shop-product-title, .shop-cart-info h3) {
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.shopping-app .shop-muted {
+  color: var(--shop-muted);
+  font-size: 14px;
+}
+
+.shopping-app .shop-header .shop-muted {
+  margin-top: 8px;
+}
+
+.shopping-app .shop-panel {
+  padding: clamp(16px, 2.5vw, 24px);
+  border: 1px solid var(--shop-border);
+  border-radius: 14px;
+  background: var(--shop-surface);
+}
+
+.shopping-app .shop-toolbar {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  align-items: end;
+  gap: 16px;
+}
+
+.shopping-app .shop-field {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.shopping-app .shop-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.shopping-app :where(.shop-input, .shop-select) {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--shop-input-border);
+  border-radius: 8px;
+  background: var(--shop-surface);
+  color: var(--shop-text);
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.shopping-app .shop-input::placeholder {
+  color: var(--shop-muted);
+  opacity: 1;
+}
+
+.shopping-app .shop-input[aria-invalid="true"] {
+  border-color: var(--shop-danger);
+}
+
+.shopping-app .shop-results {
+  margin-block: 16px;
+  color: var(--shop-muted);
+  font-size: 14px;
+}
+
+.shopping-app .shop-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-block: 16px 24px;
+}
+
+.shopping-app .shop-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 16px;
+  border: 1px solid var(--shop-border);
+  border-radius: 8px;
+  background: var(--shop-surface);
+  color: var(--shop-text);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.shopping-app .shop-button:hover:not(:disabled) {
+  border-color: var(--shop-accent);
+  background: var(--shop-subtle);
+}
+
+.shopping-app .shop-button:active:not(:disabled) {
+  background: var(--shop-accent-soft);
+}
+
+.shopping-app .shop-button--primary {
+  border-color: var(--shop-accent);
+  background: var(--shop-accent);
+  color: var(--shop-accent-text);
+}
+
+.shopping-app .shop-button--primary:hover:not(:disabled),
+.shopping-app .shop-button--primary:active:not(:disabled) {
+  border-color: var(--shop-accent-hover);
+  background: var(--shop-accent-hover);
+}
+
+.shopping-app .shop-button--danger {
+  color: var(--shop-danger);
+}
+
+.shopping-app .shop-button--danger:hover:not(:disabled) {
+  border-color: var(--shop-danger);
+  background: var(--shop-danger-soft);
+}
+
+.shopping-app .shop-button--small {
+  padding: 8px 12px;
+  font-size: 14px;
+}
+
+.shopping-app .shop-button--wide {
+  width: 100%;
+}
+
+.shopping-app .shop-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shopping-app .shop-planner-toggle[aria-expanded="true"] {
+  border-color: var(--shop-accent);
+  background: var(--shop-accent-soft);
+  color: var(--shop-accent);
+}
+
+.shopping-app .shop-planner-region,
+.shopping-app .shop-cart {
+  margin-bottom: 24px;
+}
+
+.shopping-app .shop-cart-items {
+  display: grid;
+  margin-top: 16px;
+}
+
+.shopping-app .shop-cart-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding-block: 20px;
+  border-bottom: 1px solid var(--shop-border);
+}
+
+.shopping-app .shop-cart-info {
+  flex: 1 1 220px;
+}
+
+.shopping-app .shop-cart-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.shopping-app .shop-quantity {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.shopping-app .shop-quantity .shop-button {
+  width: 44px;
+  padding: 8px;
+}
+
+.shopping-app .shop-cart-price {
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .shop-cart-total {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 20px;
+  font-size: 20px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .shop-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 20px;
+  align-items: start;
+}
+
+.shopping-app .shop-product-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  padding: 16px;
+  border: 1px solid var(--shop-border);
+  border-radius: 14px;
+  background: var(--shop-surface);
+}
+
+.shopping-app .shop-product-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  padding: 16px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.shopping-app .shop-product-image img {
+  display: block;
+  width: 100%;
+  height: 160px;
+  object-fit: contain;
+}
+
+.shopping-app .shop-product-category {
+  color: var(--shop-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.shopping-app .shop-product-price {
+  margin-top: auto;
+  font-size: 21px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .shop-product-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.shopping-app .shop-product-details {
+  padding: 14px;
+  border-radius: 8px;
+  background: var(--shop-subtle);
+  font-size: 14px;
+}
+
+.shopping-app .shop-product-details > * + * {
+  margin-top: 12px;
+}
+
+.shopping-app .shop-product-details h4 {
+  font-weight: 650;
+}
+
+.shopping-app .shop-related-list {
+  display: grid;
+  gap: 12px;
+}
+
+.shopping-app .shop-related-item {
+  display: grid;
+  gap: 8px;
+  padding-block: 12px;
+  border-top: 1px solid var(--shop-border);
+}
+
+.shopping-app .shop-empty {
+  padding: 16px;
+  border: 1px dashed var(--shop-border);
+  border-radius: 8px;
+  color: var(--shop-muted);
+  background: var(--shop-surface);
+}
+
+.shopping-app .shop-planner {
+  display: grid;
+  gap: 20px;
+}
+
+.shopping-app .shop-planner > .shop-field {
+  width: 100%;
+  max-width: 320px;
+}
+
+.shopping-app .shop-fieldset {
+  padding: 0;
+  border: 0;
+}
+
+.shopping-app .shop-fieldset legend {
+  margin-bottom: 8px;
+}
+
+.shopping-app .shop-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.shopping-app .shop-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--shop-border);
+  border-radius: 8px;
+  background: var(--shop-subtle);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.shopping-app .shop-checkbox input {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--shop-accent);
+}
+
+.shopping-app .shop-notice {
+  margin-block: 12px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--shop-border);
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.shopping-app .shop-notice .shop-button {
+  margin-top: 12px;
+}
+
+.shopping-app .shop-notice--accent {
+  border-color: var(--shop-accent);
+  background: var(--shop-accent-soft);
+}
+
+.shopping-app .shop-notice--danger {
+  border-color: var(--shop-danger);
+  background: var(--shop-danger-soft);
+  color: var(--shop-danger);
+}
+
+.shopping-app [aria-live] > * + * {
+  margin-top: 12px;
+}
+
+.shopping-app .shop-scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+}
+
+.shopping-app .shop-scenario-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--shop-border);
+  border-radius: 10px;
+  background: var(--shop-surface);
+}
+
+.shopping-app .shop-scenario-card--recommended {
+  border: 2px solid var(--shop-accent);
+  padding: 15px;
+}
+
+.shopping-app .shop-badge {
+  align-self: flex-start;
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--shop-accent-soft);
+  color: var(--shop-accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.shopping-app .shop-scenario-items {
+  display: grid;
+  gap: 10px;
+  padding-left: 18px;
+  list-style: disc;
+  font-size: 14px;
+}
+
+.shopping-app .shop-scenario-card hr {
+  margin-top: auto;
+  border: 0;
+  border-top: 1px solid var(--shop-border);
+}
+
+.shopping-app .shop-scenario-total {
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .shop-status {
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .shop-status--success {
+  color: var(--shop-success);
+}
+
+.shopping-app .shop-status--danger {
+  color: var(--shop-danger);
+}
+
+@media (min-width: 760px) {
+  .shopping-app .shop-toolbar {
+    grid-template-columns: 2fr 1fr 1fr;
   }
 }
 
-@keyframes float {
-  0%,
-  100% {
-    transform: translateY(0);
+@media (max-width: 420px) {
+  /* Keep natural document height: the MCP host owns the iframe height limit. */
+  .shopping-app {
+    padding: 12px;
   }
-  50% {
-    transform: translateY(-6px);
-  }
-}
 
-@keyframes twirl {
-  0%,
-  80% {
-    transform: rotateY(0deg);
+  .shopping-app :where(.shop-panel, .shop-product-card, .shop-scenario-card) {
+    padding: 12px;
   }
-  85% {
-    transform: rotateY(180deg);
+
+  .shopping-app :where(.shop-toolbar, .shop-product-grid, .shop-scenario-grid) {
+    gap: 12px;
   }
-  95% {
-    transform: rotateY(180deg);
+
+  .shopping-app :where(.shop-header, .shop-actions, .shop-planner-region, .shop-cart) {
+    margin-bottom: 16px;
   }
-  100% {
-    transform: rotateY(360deg);
+
+  .shopping-app .shop-product-image {
+    min-height: 140px;
+    padding: 12px;
+  }
+
+  .shopping-app .shop-product-image img {
+    height: 128px;
+  }
+
+  .shopping-app .shop-cart-item {
+    padding-block: 12px;
+  }
+
+  .shopping-app .shop-actions > .shop-button {
+    width: 100%;
+  }
+
+  .shopping-app .shop-cart-controls {
+    width: 100%;
   }
 }
