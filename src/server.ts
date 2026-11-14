@@ -75,6 +75,9 @@ export const app = new Skybridge({
           };
         },
       )
+      /**
+       * /////////////////////////////////
+       */
       .registerTool(
         {
           name: "add-to-cart",
@@ -144,6 +147,9 @@ export const app = new Skybridge({
           };
         },
       )
+      /**
+       * //////////////////////////////
+       */
       .registerTool(
         {
           name: "get-cart",
