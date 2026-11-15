@@ -42,9 +42,12 @@ export default function ScenarioPlanner({ products }: Props) {
   // 4. Проверяем бюджет
   const budget = Number(budgetInput);
 
-  const isValidBudget =
-    budgetInput.trim() !== "" && Number.isFinite(budget) && budget > 0;
+  const budgetCents = Math.round(budget * 100);
 
+  const isValidBudget =
+    /^(0|[1-9]\d*)(\.\d{1,2})?$/.test(budgetInput) &&
+    budget > 0 &&
+    Number.isSafeInteger(budgetCents);
   const recommendedScenario =
     isValidBudget && selectedCategories.length > 0
       ? [...scenarios]
@@ -52,7 +55,7 @@ export default function ScenarioPlanner({ products }: Props) {
           .find(
             (scenario) =>
               scenario.products.length === selectedCategories.length &&
-              scenario.total <= budget,
+              Math.round(scenario.total * 100) <= budgetCents,
           )
       : undefined;
 
@@ -74,9 +77,10 @@ export default function ScenarioPlanner({ products }: Props) {
       <label className="shop-field shop-budget">
         Ваш бюджет ($):
         <input
-          type="number"
+          type="text"
+          inputMode="decimal"
           min="0"
-          step="any"
+          step="0.01"
           value={budgetInput}
           onChange={(e) => setBudgetInput(e.target.value)}
           className="shop-input"
@@ -85,7 +89,7 @@ export default function ScenarioPlanner({ products }: Props) {
 
       {!isValidBudget && (
         <p className="shop-status shop-status--danger">
-          Введите положительный бюджет.
+          Введите корректный положительный бюджет
         </p>
       )}
 
@@ -121,7 +125,8 @@ export default function ScenarioPlanner({ products }: Props) {
       ) : (
         <div className="shop-scenario-grid">
           {scenarios.map((scenario) => {
-            const remaining = budget - scenario.total;
+            const remainingCents =
+              budgetCents - Math.round(scenario.total * 100);
 
             return (
               <div key={scenario.strategy} className="shop-scenario-card">
@@ -145,11 +150,11 @@ export default function ScenarioPlanner({ products }: Props) {
 
                 {isValidBudget && (
                   <p
-                    className={`shop-status ${remaining >= 0 ? "shop-status--success" : "shop-status--danger"}`}
+                    className={`shop-status ${remainingCents >= 0 ? "shop-status--success" : "shop-status--danger"}`}
                   >
-                    {remaining >= 0
-                      ? `Останется: $${remaining.toFixed(2)}`
-                      : `Не хватает: $${Math.abs(remaining).toFixed(2)}`}
+                    {remainingCents >= 0
+                      ? `Останется: $${(remainingCents / 100).toFixed(2)}`
+                      : `Не хватает: $${Math.abs(remainingCents / 100).toFixed(2)}`}
                   </p>
                 )}
               </div>

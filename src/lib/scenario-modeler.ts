@@ -36,15 +36,15 @@ export function calculateScenarios(
       return selected ? [selected] : [];
     });
 
-    const total = selectedProducts.reduce(
-      (sum, product) => sum + product.price,
+    const totalCents = selectedProducts.reduce(
+      (sum, product) => sum + Math.round(product.price * 100),
       0,
     );
 
     return {
       strategy,
       products: selectedProducts,
-      total: Math.floor(total * 100) / 100,
+      total: totalCents / 100,
     };
   }
 
