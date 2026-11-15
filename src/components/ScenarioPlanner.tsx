@@ -45,6 +45,17 @@ export default function ScenarioPlanner({ products }: Props) {
   const isValidBudget =
     budgetInput.trim() !== "" && Number.isFinite(budget) && budget > 0;
 
+  const recommendedScenario =
+    isValidBudget && selectedCategories.length > 0
+      ? [...scenarios]
+          .reverse()
+          .find(
+            (scenario) =>
+              scenario.products.length === selectedCategories.length &&
+              scenario.total <= budget,
+          )
+      : undefined;
+
   // 5. Выбор категории
   function toggleCategory(category: string) {
     setChosenCategories(
@@ -55,19 +66,12 @@ export default function ScenarioPlanner({ products }: Props) {
   }
 
   return (
-    <section
-      style={{
-        padding: 20,
-        marginTop: 24,
-        border: "1px solid #ddd",
-        borderRadius: 12,
-      }}
-    >
-      <h2>Планировщик покупок</h2>
+    <section className="shop-panel shop-planner">
+      <h2 className="shop-section-title">Планировщик покупок</h2>
 
-      <p>Сравните три варианта покупок.</p>
+      <p className="shop-muted">Сравните три варианта покупок.</p>
 
-      <label>
+      <label className="shop-field shop-budget">
         Ваш бюджет ($):
         <input
           type="number"
@@ -75,73 +79,73 @@ export default function ScenarioPlanner({ products }: Props) {
           step="any"
           value={budgetInput}
           onChange={(e) => setBudgetInput(e.target.value)}
-          style={{
-            display: "block",
-            padding: 8,
-            marginTop: 8,
-          }}
+          className="shop-input"
         />
       </label>
 
       {!isValidBudget && (
-        <p style={{ color: "crimson" }}>Введите положительный бюджет.</p>
+        <p className="shop-status shop-status--danger">
+          Введите положительный бюджет.
+        </p>
       )}
 
-      <h3>Категории товаров</h3>
+      <fieldset className="shop-categories">
+        <legend className="shop-label">Категории товаров</legend>
 
-      {categories.map((category) => (
-        <label key={category} style={{ display: "block", marginBottom: 8 }}>
-          <input
-            type="checkbox"
-            checked={selectedCategories.includes(category)}
-            onChange={() => toggleCategory(category)}
-          />{" "}
-          {category}
-        </label>
-      ))}
+        {isValidBudget && selectedCategories.length > 0 && (
+          <p>
+            {recommendedScenario
+              ? `Рекомендуем: ${
+                  strategyNames[recommendedScenario.strategy]
+                } — $${recommendedScenario.total.toFixed(2)}`
+              : "Ни один полный набор не укладывается в бюджет."}
+          </p>
+        )}
+
+        <div className="shop-checkbox-group">
+          {categories.map((category) => (
+            <label key={category} className="shop-checkbox">
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(category)}
+                onChange={() => toggleCategory(category)}
+              />{" "}
+              <span>{category}</span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
 
       {selectedCategories.length === 0 ? (
-        <p>Выберите хотя бы одну категорию.</p>
+        <p className="shop-empty">Выберите хотя бы одну категорию.</p>
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
-            gap: 12,
-            marginTop: 20,
-          }}
-        >
+        <div className="shop-scenario-grid">
           {scenarios.map((scenario) => {
             const remaining = budget - scenario.total;
 
             return (
-              <div
-                key={scenario.strategy}
-                style={{
-                  padding: 12,
-                  border: "1px solid #ccc",
-                  borderRadius: 8,
-                }}
-              >
-                <h3>{strategyNames[scenario.strategy]}</h3>
+              <div key={scenario.strategy} className="shop-scenario-card">
+                <h3 className="shop-card-title">
+                  {strategyNames[scenario.strategy]}
+                </h3>
 
-                {scenario.products.map((product) => (
-                  <p key={product.id}>
-                    {product.title} — ${product.price.toFixed(2)}
-                  </p>
-                ))}
+                <div className="shop-scenario-items">
+                  {scenario.products.map((product) => (
+                    <p key={product.id}>
+                      {product.title} — ${product.price.toFixed(2)}
+                    </p>
+                  ))}
+                </div>
 
                 <hr />
 
-                <p>
+                <p className="shop-scenario-total">
                   <strong>Стоимость: ${scenario.total.toFixed(2)}</strong>
                 </p>
 
                 {isValidBudget && (
                   <p
-                    style={{
-                      color: remaining >= 0 ? "green" : "crimson",
-                    }}
+                    className={`shop-status ${remaining >= 0 ? "shop-status--success" : "shop-status--danger"}`}
                   >
                     {remaining >= 0
                       ? `Останется: $${remaining.toFixed(2)}`

@@ -1,10 +1,14 @@
 import { useToolInfo, useCallTool } from "@/helpers.js";
 
 import { useState } from "react";
+import { useUser } from "skybridge/web";
 
 import ScenarioPlanner from "@/components/ScenarioPlanner.js";
+import "../index.css";
 
 export default function Products() {
+  const { theme } = useUser();
+
   // 1. Получаем каталог товаров
   const { output, isPending } = useToolInfo<"get-products">();
 
@@ -18,6 +22,7 @@ export default function Products() {
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
+  const [isPlannerOpen, setIsPlannerOpen] = useState(false);
 
   // 2. Инструмент добавления товара
   const { callTool: addToCart, isPending: isAdding } =
@@ -83,71 +88,96 @@ export default function Products() {
   }
 
   if (isPending) {
-    return <p>Загрузка товаров...</p>;
+    return (
+      <div className="shopping-app" data-theme={theme}>
+        <p className="shop-empty">Загрузка товаров...</p>
+      </div>
+    );
   }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Каталог товаров</h2>
-      <input
-        type="text"
-        placeholder="Поиск товаров..."
-        value={searchQuery}
-        onChange={(event) => setSearchQuery(event.target.value)}
-        style={{
-          padding: 10,
-          width: "100%",
-          maxWidth: 350,
-          marginBottom: 16,
-        }}
-      />
-      <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-        <select
-          value={selectedCategory}
-          onChange={(event) => setSelectedCategory(event.target.value)}
-        >
-          <option value="all">Все категории</option>
+    <main className="shopping-app" data-theme={theme}>
+      <h2 className="shop-title">Каталог товаров</h2>
+      <div className="shop-panel shop-filters">
+        <label className="shop-field">
+          Поиск товаров
+          <input
+            type="text"
+            placeholder="Поиск товаров..."
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            className="shop-input"
+          />
+        </label>
+        <label className="shop-field">
+          Категория
+          <select
+            className="shop-input"
+            value={selectedCategory}
+            onChange={(event) => setSelectedCategory(event.target.value)}
+          >
+            <option value="all">Все категории</option>
 
-          {categories.map((category) => (
-            <option key={category} value={category}>
-              {category}
-            </option>
-          ))}
-        </select>
-
-        <input
-          type="number"
-          min="0"
-          placeholder="Цена до ($)"
-          value={maxPrice}
-          onChange={(event) => setMaxPrice(event.target.value)}
-          style={{ padding: 8, width: 140 }}
-        />
+            {categories.map((category) => (
+              <option key={category} value={category}>
+                {category}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="shop-field">
+          Цена до ($)
+          <input
+            type="number"
+            min="0"
+            placeholder="Цена до ($)"
+            value={maxPrice}
+            onChange={(event) => setMaxPrice(event.target.value)}
+            className="shop-input"
+          />
+        </label>
       </div>
 
-      <p>Найдено товаров: {filteredProducts.length}</p>
+      <p className="shop-results">Найдено товаров: {filteredProducts.length}</p>
 
-      <ScenarioPlanner products={products} />
+      <button
+        className="shop-button shop-planner-toggle"
+        type="button"
+        onClick={() => setIsPlannerOpen(!isPlannerOpen)}
+        aria-expanded={isPlannerOpen}
+      >
+        {isPlannerOpen ? "Скрывать планировщик" : "Спланировать покупки"}
+      </button>
+
+      <div className="shop-planner-region" hidden={!isPlannerOpen}>
+        <ScenarioPlanner products={products} />
+      </div>
 
       {/* Кнопка просмотра корзины */}
-      <button onClick={() => getCart()} disabled={isLoadingCart}>
+      <button
+        className="shop-button shop-cart-toggle"
+        onClick={() => getCart()}
+        disabled={isLoadingCart}
+      >
         {isLoadingCart ? "Загрузка корзины..." : "Посмотреть корзину"}
       </button>
       {/* Содержимое корзины */}
       {cartData && (
-        <div>
-          <h2>Моя корзина</h2>
+        <section className="shop-panel shop-cart">
+          <h2 className="shop-section-title">Моя корзина</h2>
 
           {cartData.structuredContent.items.length === 0 && (
-            <p>Корзина пуста</p>
+            <p className="shop-empty">Корзина пуста</p>
           )}
 
           {cartData.structuredContent.items.map((item) => (
-            <div key={item.product_id}>
-              <h3>{item.products.title}</h3>
+            <div className="shop-cart-item" key={item.product_id}>
+              <h3 className="shop-cart-title">{item.products.title}</h3>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div className="shop-quantity">
                 <button
+                  className="shop-button"
+                  aria-label={`Уменьшить количество: ${item.products.title}`}
                   disabled={isUpdating || item.quantity <= 1}
                   onClick={() =>
                     handleQuantityChange(item.product_id, item.quantity - 1)
@@ -159,6 +189,8 @@ export default function Products() {
                 <span>{item.quantity}</span>
 
                 <button
+                  className="shop-button"
+                  aria-label={`Увеличить количество: ${item.products.title}`}
                   disabled={isUpdating}
                   onClick={() =>
                     handleQuantityChange(item.product_id, item.quantity + 1)
@@ -169,6 +201,7 @@ export default function Products() {
               </div>
 
               <button
+                className="shop-button shop-button--danger"
                 disabled={isRemoving}
                 onClick={() =>
                   removeFromCart(
@@ -192,13 +225,17 @@ export default function Products() {
                 {isRemoving ? "Удаляем..." : "Удалить из корзины"}
               </button>
 
-              <p>Цена: ${item.products.price}</p>
+              <p className="shop-muted shop-cart-unit-price">
+                Цена: ${item.products.price}
+              </p>
 
-              <p>Сумма: ${(item.products.price * item.quantity).toFixed(2)}</p>
+              <p className="shop-cart-line-total">
+                Сумма: ${(item.products.price * item.quantity).toFixed(2)}
+              </p>
             </div>
           ))}
 
-          <h3>
+          <h3 className="shop-cart-total">
             Итого: $
             {cartData.structuredContent.items
               .reduce(
@@ -207,150 +244,130 @@ export default function Products() {
               )
               .toFixed(2)}
           </h3>
-        </div>
+        </section>
       )}
       {/*
       ////////////////////////////////////////////////////////////////////////////////////////////////////////////
       */}
 
       {/* Каталог товаров */}
-      {filteredProducts.map((product) => (
-        <div
-          key={product.id}
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 8,
-            padding: 12,
-            marginTop: 12,
-          }}
-        >
-          <img
-            src={product.image}
-            alt={product.title}
-            style={{
-              width: 120,
-              height: 120,
-              objectFit: "contain",
-            }}
-          />
+      <div className="shop-product-grid">
+        {filteredProducts.map((product) => (
+          <article key={product.id} className="shop-product-card">
+            <div className="shop-product-image">
+              <img src={product.image} alt={product.title} />
+            </div>
 
-          <h3>{product.title}</h3>
+            <p className="shop-product-category">{product.category}</p>
+            <h3 className="shop-card-title">{product.title}</h3>
 
-          <p>Цена: ${product.price}</p>
+            <p className="shop-product-price">Цена: ${product.price}</p>
 
-          <button
-            disabled={isLoadingDetails}
-            onClick={() => {
-              if (expandedCardId === product.id) {
-                setExpandedCardId(null);
-                setSelectedProductId(null);
-                return;
-              }
+            <button
+              className="shop-button"
+              disabled={isLoadingDetails}
+              onClick={() => {
+                if (expandedCardId === product.id) {
+                  setExpandedCardId(null);
+                  setSelectedProductId(null);
+                  return;
+                }
 
-              setExpandedCardId(product.id);
-              setSelectedProductId(product.id);
+                setExpandedCardId(product.id);
+                setSelectedProductId(product.id);
 
-              getProductDetails({
-                productId: product.id,
-              });
-            }}
-          >
-            {expandedCardId === product.id
-              ? "Скрывать подробности"
-              : "Подробнее"}
-          </button>
-
-          {expandedCardId === product.id && (
-            <div
-              style={{
-                padding: 12,
-                marginTop: 12,
-                background: "#f5f5f5",
-                borderRadius: 8,
+                getProductDetails({
+                  productId: product.id,
+                });
               }}
             >
-              {isLoadingDetails ? (
-                <p>Загрузка информации...</p>
-              ) : detailsData?.structuredContent?.product?.id ===
-                selectedProductId ? (
-                <>
-                  <h4>{detailsData.structuredContent.product.title}</h4>
+              {expandedCardId === product.id
+                ? "Скрывать подробности"
+                : "Подробнее"}
+            </button>
 
-                  <p>{detailsData.structuredContent.product.description}</p>
+            {expandedCardId === product.id && (
+              <div className="shop-product-details">
+                {isLoadingDetails ? (
+                  <p>Загрузка информации...</p>
+                ) : detailsData?.structuredContent?.product?.id ===
+                  selectedProductId ? (
+                  <>
+                    <h4>{detailsData.structuredContent.product.title}</h4>
 
-                  <p>
-                    Категория: {detailsData.structuredContent.product.category}
-                  </p>
+                    <p>{detailsData.structuredContent.product.description}</p>
 
-                  <h4>Похожие товары</h4>
+                    <p>
+                      Категория: {detailsData.structuredContent.product.category}
+                    </p>
 
-                  {detailsData.structuredContent.relatedProducts.length ===
-                  0 ? (
-                    <p>Похожих товаров нет.</p>
-                  ) : (
-                    detailsData.structuredContent.relatedProducts.map(
-                      (related) => (
-                        <div
-                          key={related.id}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 12,
-                            marginBottom: 8,
-                          }}
-                        >
-                          <span>
-                            {related.title} - ${related.price}
-                          </span>
+                    <h4>Похожие товары</h4>
 
-                          <button
-                            disabled={isLoadingDetails}
-                            onClick={() => {
-                              setSelectedProductId(related.id);
-
-                              getProductDetails({
-                                productId: related.id,
-                              });
-                            }}
+                    {detailsData.structuredContent.relatedProducts.length ===
+                    0 ? (
+                      <p>Похожих товаров нет.</p>
+                    ) : (
+                      detailsData.structuredContent.relatedProducts.map(
+                        (related) => (
+                          <div
+                            key={related.id}
+                            className="shop-related-item"
                           >
-                            Изучить товар
-                          </button>
-                        </div>
-                      ),
-                    )
-                  )}
-                </>
-              ) : (
-                <p>Не удалось показать информацию о товаре</p>
-              )}
-            </div>
-          )}
+                            <span>
+                              {related.title} - ${related.price}
+                            </span>
 
-          <button
-            disabled={isAdding}
-            onClick={() =>
-              addToCart(
-                {
-                  productId: product.id,
-                  quantity: 1,
-                },
-                {
-                  onSuccess: (result) => {
-                    if (!result.isError && result.structuredContent?.saved) {
-                      getCart();
-                    }
+                            <button
+                              className="shop-button"
+                              disabled={isLoadingDetails}
+                              onClick={() => {
+                                setSelectedProductId(related.id);
+
+                                getProductDetails({
+                                  productId: related.id,
+                                });
+                              }}
+                            >
+                              Изучить товар
+                            </button>
+                          </div>
+                        ),
+                      )
+                    )}
+                  </>
+                ) : (
+                  <p>Не удалось показать информацию о товаре</p>
+                )}
+              </div>
+            )}
+
+            <button
+              className="shop-button shop-button--primary"
+              disabled={isAdding}
+              onClick={() =>
+                addToCart(
+                  {
+                    productId: product.id,
+                    quantity: 1,
                   },
-                  onError: (error) => {
-                    console.error("Ошибка добавления:", error);
+                  {
+                    onSuccess: (result) => {
+                      if (!result.isError && result.structuredContent?.saved) {
+                        getCart();
+                      }
+                    },
+                    onError: (error) => {
+                      console.error("Ошибка добавления:", error);
+                    },
                   },
-                },
-              )
-            }
-          >
-            {isAdding ? "Добавляем..." : "Добавить в корзину"}
-          </button>
-        </div>
-      ))}
-    </div>
+                )
+              }
+            >
+              {isAdding ? "Добавляем..." : "Добавить в корзину"}
+            </button>
+          </article>
+        ))}
+      </div>
+    </main>
   );
 }
