@@ -7,6 +7,7 @@ import CatalogFilters from "@/components/CatalogFilters.js";
 import ProductCard from "@/components/ProductCard.js";
 import CartPanel from "@/components/CartPanel.js";
 import ScenarioPlanner from "@/components/ScenarioPlanner.js";
+import BudgetAllocator from "@/components/BudgetAllocator.js";
 import "../index.css";
 
 export default function Products() {
@@ -27,6 +28,7 @@ export default function Products() {
   const [maxPrice, setMaxPrice] = useState("");
   const [isPlannerOpen, setIsPlannerOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAllocatorOpen, setIsAllocatorOpen] = useState(false);
 
   // 2. Инструмент добавления товара
   const { callTool: addToCart, isPending: isAdding } =
@@ -209,6 +211,27 @@ export default function Products() {
           onQuantityChange={handleQuantityChange}
           onRemoveFromCart={handleRemoveFromCart}
         />
+      )}
+
+      {cartData?.structuredContent?.items && (
+        <>
+          {isCartOpen && (
+            <button
+              className="shop-button shop-allocator-toggle"
+              type="button"
+              onClick={() => setIsAllocatorOpen((prev) => !prev)}
+              aria-expanded={isAllocatorOpen}
+            >
+              {isAllocatorOpen
+                ? "Скрыть распределение бюджета"
+                : "Распределить бюджет"}
+            </button>
+          )}
+
+          <div hidden={!isCartOpen || !isAllocatorOpen}>
+            <BudgetAllocator items={cartData.structuredContent.items} />
+          </div>
+        </>
       )}
 
       {/* Каталог товаров */}

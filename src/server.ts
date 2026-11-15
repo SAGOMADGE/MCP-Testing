@@ -29,6 +29,7 @@ const CartItemSchema = z.object({
     title: z.string(),
     price: z.number(),
     image: z.string(),
+    category: z.string(),
   }),
 });
 
@@ -167,7 +168,9 @@ export const app = new Skybridge({
 
           const { data, error } = await supabase
             .from("cart_items")
-            .select("product_id, quantity, products (id, title, price, image)")
+            .select(
+              "product_id, quantity, products (id, title, price, image, category)",
+            )
             .eq("cart_id", cartId);
 
           if (error) {

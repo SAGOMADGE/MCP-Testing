@@ -491,6 +491,106 @@
   font-weight: 600;
 }
 
+.shopping-app .shop-allocator {
+  display: grid;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.shopping-app .shop-allocator .shop-input[aria-invalid="true"] {
+  border-color: var(--shop-danger);
+}
+
+.shopping-app .shop-allocator .shop-input[aria-invalid="true"]:focus-visible {
+  outline-color: var(--shop-danger);
+}
+
+.shopping-app .allocator-categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+
+.shopping-app .allocator-category {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid var(--shop-border);
+  border-radius: 10px;
+  background: var(--shop-subtle);
+}
+
+.shopping-app .allocator-allocation,
+.shopping-app .allocator-spent {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .allocator-amount {
+  color: var(--shop-accent);
+  font-size: 18px;
+}
+
+.shopping-app .allocator-spent {
+  color: var(--shop-muted);
+}
+
+.shopping-app .allocator-range {
+  display: block;
+  width: 100%;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border-radius: 6px;
+  accent-color: var(--shop-accent);
+  cursor: pointer;
+}
+
+.shopping-app .allocator-range:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.shopping-app .allocator-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--shop-border);
+}
+
+.shopping-app .allocator-summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--shop-border);
+  border-radius: 8px;
+  background: var(--shop-subtle);
+}
+
+.shopping-app .allocator-summary-label {
+  color: var(--shop-text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.shopping-app .allocator-summary-value {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+
+.shopping-app .allocator-summary-caption {
+  color: var(--shop-muted);
+  font-size: 13px;
+}
+
 .shopping-app .shop-status--success {
   background: var(--shop-success-soft);
   color: var(--shop-success);
@@ -513,6 +613,15 @@
 }
 
 @media (max-width: 420px) {
+  .shopping-app .shop-allocator {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .shopping-app .allocator-category {
+    padding: 12px;
+  }
+
   .shopping-app :where(.shop-panel, .shop-product-card, .shop-scenario-card) {
     padding: 12px;
   }
