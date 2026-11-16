@@ -35,12 +35,14 @@ const CartItemSchema = z.object({
 export const app = new Skybridge({
   name: "alpic-openai-app",
   version: "0.0.1",
+  skills: true,
   handler: (server) =>
     server
       .registerTool(
         {
           name: "get-products",
-          description: "Get products from Supabase",
+          description:
+            "Get products from Supabase. For shopping workflows, see skill://shopping-assistant/SKILL.md",
           annotations: {
             readOnlyHint: true,
           },
