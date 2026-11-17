@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "shopping-cart",
+  "version": "1.0.0",
+  "description": "Shopping assistant with product search, an interactive cart, and budget-aware shopping workflows.",
+  "extensions": {
+    "com.openai": {
+      "apps": "./.app.json",
+      "interface": {
+        "displayName": "Shopping Cart MCP",
+        "shortDescription": "Interactive shopping assistant",
+        "defaultPrompt": [
+          "Show me products from the catalog.",
+          "Help me build a cart within my budget.",
+          "Show my saved cart and calculate the total."
+        ]
+      }
+    }
+  }
+}
