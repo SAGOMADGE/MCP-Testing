@@ -1,0 +1,9 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "shopping-cart": {
+      "type": "streamable-http",
+      "url": "https://mcp-testing-5679d679.alpic.live/mcp"
+    }
+  }
+}

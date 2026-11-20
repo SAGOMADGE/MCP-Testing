@@ -1,0 +1,22 @@
+{
+  "name": "shopping-cart",
+  "version": "1.0.2",
+  "description": "Shopping assistant with product search, an interactive cart, and budget-aware shopping workflows.",
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Shopping Cart MCP",
+    "shortDescription": "Interactive shopping assistant",
+    "longDescription": "Browse the remote product catalog, inspect products, and manage a shared demo cart. Includes the shopping-assistant skill and a React view in supported MCP Apps hosts.",
+    "developerName": "SAGOMADGE",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "defaultPrompt": [
+      "Show me products from the catalog.",
+      "Help me build a cart within my budget.",
+      "Show my saved cart and calculate the total."
+    ]
+  }
+}

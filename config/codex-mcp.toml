@@ -1,0 +1,4 @@
+# Fallback only: merge this section into ~/.codex/config.toml.
+# Do not add it when the plugin's shopping-cart server is already enabled.
+[mcp_servers.shopping-cart]
+url = "https://mcp-testing-5679d679.alpic.live/mcp"

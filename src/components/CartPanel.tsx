@@ -28,7 +28,15 @@ export default function CartPanel({
   return (
     <section className="shop-panel shop-cart">
       <div className="shop-cart-header">
-        <h2 className="shop-section-title">Моя корзина</h2>
+        <h2 className="shop-section-title">Общая демо-корзина</h2>
+        <button
+          className="shop-button"
+          type="button"
+          disabled={isLoading || isUpdating || isRemoving}
+          onClick={onRefresh}
+        >
+          Обновить корзину
+        </button>
       </div>
 
       {isLoading ? (

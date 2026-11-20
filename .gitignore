@@ -8,3 +8,7 @@ dist/
 *.tsbuildinfo
 .skybridge/
 .vercel/
+artifacts/
+.delivery-work/
+/codex-review.zip
+/plugins/shopping-cart/.app.json

@@ -7,5 +7,5 @@
     "incremental": false
   },
 
-  "include": ["src", "evals", ".skybridge/**/*.d.ts"]
+  "include": ["src", "evals", "tests", ".skybridge/**/*.d.ts"]
 }
