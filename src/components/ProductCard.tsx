@@ -89,6 +89,7 @@ export default function ProductCard({
       <button
         className="shop-button shop-button--primary"
         disabled={isAdding}
+        aria-busy={isAdding}
         onClick={() => onAddToCart(product.id)}
       >
         {isAdding ? "Добавляем..." : "Добавить в корзину"}

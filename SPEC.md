@@ -8,6 +8,10 @@ through conversation and the existing React view. The assistant interprets inten
 the six MCP tools supply facts and perform explicitly requested cart operations.
 Scenario Modeler remains a client-side preview, not a seventh business tool.
 
+Catalog additions track pending requests per product ID: only that product's
+button is busy, duplicate in-flight additions are blocked, and other products
+can be added concurrently. Success and errors both release the product lock.
+
 The user has authorized implementation and verification, not another discovery
 cycle. Preserve the running server, data, UI and installed TEST plugin. Do not
 publish publicly, create paid resources, or mutate the production cart in tests.

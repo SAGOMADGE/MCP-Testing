@@ -1,6 +1,6 @@
 import { useToolInfo, useCallTool } from "@/helpers.js";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useUser } from "skybridge/web";
 
 import CatalogFilters from "@/components/CatalogFilters.js";
@@ -30,8 +30,11 @@ export default function Products() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   // 2. Инструмент добавления товара
-  const { callTool: addToCart, isPending: isAdding } =
-    useCallTool("add-to-cart");
+  const { callTool: addToCart } = useCallTool("add-to-cart");
+  const pendingAdds = useRef(new Set<number>());
+  const [addingProductIds, setAddingProductIds] = useState<ReadonlySet<number>>(
+    () => new Set(),
+  );
 
   // 3. Инструмент получения корзины
   const {
@@ -105,6 +108,10 @@ export default function Products() {
   }
 
   function handleAddToCart(productId: number) {
+    // Lock immediately, including repeated clicks before React renders again.
+    if (pendingAdds.current.has(productId)) return;
+    pendingAdds.current.add(productId);
+    setAddingProductIds(new Set(pendingAdds.current));
     setActionError(null);
     addToCart(
       {
@@ -122,6 +129,10 @@ export default function Products() {
         onError: (error) => {
           setActionError("Добавление не подтверждено. Обновите корзину перед повтором, чтобы не добавить товар дважды.");
           console.error("Ошибка добавления:", error);
+        },
+        onSettled: () => {
+          pendingAdds.current.delete(productId);
+          setAddingProductIds(new Set(pendingAdds.current));
         },
       },
     );
@@ -236,7 +247,7 @@ export default function Products() {
             selectedProductId={selectedProductId}
             details={detailsData?.structuredContent}
             isLoadingDetails={isLoadingDetails}
-            isAdding={isAdding}
+            isAdding={addingProductIds.has(product.id)}
             onToggleDetails={handleToggleDetails}
             onSelectRelatedProduct={handleSelectRelatedProduct}
             onAddToCart={handleAddToCart}
