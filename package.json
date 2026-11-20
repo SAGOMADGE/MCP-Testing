@@ -2,7 +2,7 @@
   "name": "mcp-practice",
   "version": "0.0.1",
   "private": true,
-  "description": "Alpic MCP Server Template",
+  "description": "Shopping Cart MCP: Skybridge, React, Supabase and a portable agent plugin",
   "type": "module",
   "scripts": {
     "dev": "skybridge dev",
@@ -10,6 +10,14 @@
     "build": "skybridge build",
     "start": "skybridge start",
     "deploy": "alpic deploy",
+    "test": "vitest run --config vitest.config.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.evals.json",
+    "plugin:sync": "node scripts/plugin.mjs sync",
+    "plugin:check": "node scripts/plugin.mjs check",
+    "build:check": "node scripts/check-build.mjs",
+    "package:delivery": "node scripts/plugin.mjs package",
+    "test:remote": "node scripts/check-remote.mjs",
+    "test:codex": "node scripts/check-codex.mjs",
     "evals": "vitest run evals",
     "evals:types": "tsc --noEmit -p tsconfig.evals.json"
   },
@@ -28,6 +36,7 @@
   },
   "devDependencies": {
     "@ai-sdk/anthropic": "^4.0.0",
+    "@modelcontextprotocol/client": "2.4.0",
     "@skybridge/devtools": "^2.1.0",
     "@skybridge/test": "^2.1.0",
     "@skybridge/vite-plugin": "^2.1.0",
@@ -38,10 +47,12 @@
     "@vitejs/plugin-react": "^6.0.3",
     "ai": "^7.0.0",
     "alpic": "^1.155.0",
+    "fflate": "0.8.2",
     "tailwindcss": "^4.3.3",
     "tsx": "^4.23.15",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "yaml": "2.9.1"
   },
   "engines": {
     "node": ">=24.0.0"

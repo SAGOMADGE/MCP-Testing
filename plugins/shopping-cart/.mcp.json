@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "shopping-cart": {
+      "type": "http",
+      "url": "https://mcp-testing-5679d679.alpic.live/mcp"
+    }
+  }
+}

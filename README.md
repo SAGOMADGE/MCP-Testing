@@ -1,97 +1,61 @@
-# Skybridge Template
+# Shopping Cart MCP
 
-A starter TypeScript template for building MCP Apps and ChatGPT plugins with the [Skybridge](https://docs.skybridge.tech) framework.
+Shopping Cart MCP App для Нугзара: Skybridge 2, React, TypeScript, Supabase.
+Один удалённый сервер обслуживает ChatGPT и совместимые MCP-клиенты.
 
-## Getting Started
+**Начните с [короткой инструкции для Нугзара](docs/README-NUGZAR.md).**
 
-### Prerequisites
+- [Установка в ChatGPT](docs/INSTALL-CHATGPT.md)
+- [Установка в Codex и резервное подключение](docs/INSTALL-CODEX.md)
+- [Архитектура и официальные источники](docs/ARCHITECTURE.md)
+- [Фактические проверки](docs/VALIDATION.md)
+- [Передача исходников и обновление Alpic](docs/RELEASE.md)
 
-- Node.js 24+
+MCP: https://mcp-testing-5679d679.alpic.live/mcp
 
-### Local Development
+Playground: https://mcp-testing-5679d679.alpic.live/try
 
-#### 1. Install
+Компьютер разработчика и локальный dev-сервер для использования не нужны.
+Нужны доступность существующего Alpic deployment, Supabase и интернет.
+Корзина общая для всех пользователей; оплаты, checkout и изоляции пользователей нет.
 
-```bash
-npm install
-# or
-pnpm install
-# or
-bun install
-# or
-deno install
-# or
-yarn install
+## Разработка
+
+Node.js 24+, `npm ci`. В PowerShell при блокировке `npm.ps1` используйте `npm.cmd`.
+Для запуска сервера создайте `.env` с `SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+`DEMO_CART_ID` из существующего окружения. Не включайте значения в плагин или Git.
+
+```sh
+npm run typecheck
+npm test
+npm run build
+npm run build:check
+npm run plugin:check
+npm run test:remote
+npm run package:delivery
+# Optional: requires an installed Codex CLI
+npm run test:codex
 ```
 
-#### 2. Start your local server
+`test` не использует `.env`, сеть или платные API: Supabase заменён моделью в памяти.
+`test:remote` вызывает только инструменты чтения и читает React-ресурс.
+`evals` — отдельная проверка платной моделью, требует `RUN_MODEL_EVALS=1` и
+`ANTHROPIC_API_KEY`; записи блокируются middleware. Она не входит в обычные тесты.
 
-Run the development server from the root directory:
+`plugin:sync` обновляет Codex-манифесты и копию оригинального Skill из
+`src/skills/shopping-assistant/SKILL.md`. `plugin:check` выявляет рассинхронизацию.
 
-```bash
-npm run dev
-# or
-pnpm dev
-# or
-bun dev
-# or
-deno task dev
-# or
-yarn dev
-```
+## Поставка
 
-This command starts:
-- Your MCP server at `http://localhost:3000/mcp`.
-- Skybridge DevTools UI at `http://localhost:3000`.
+`package:delivery` создаёт в `artifacts/`:
 
-#### 3. Project structure
+- `shopping-cart-1.0.2.zip` — один переносимый плагин, пять файлов;
+- `shopping-cart-handoff-1.0.2.zip` — документация, плагин, отдельный Skill ZIP,
+  Codex marketplace и резервный TOML;
+- `shopping-cart-source-1.0.2.zip` — исходники без секретов и персональной привязки;
+- `SHA256SUMS.txt` и `package-report.json`.
 
-```
-├── src/
-│   ├── index.ts          # Entry point (starts the app)
-│   ├── server.ts         # App definition (tools, views)
-│   ├── views/            # React components (one per view)
-│   ├── components/       # Shared UI components
-│   ├── helpers.ts        # Shared utilities
-│   └── index.css         # Global styles
-├── evals/                # Model-driven scenarios (pnpm evals, needs ANTHROPIC_API_KEY)
-├── vite.config.ts
-├── alpic.json            # Deployment config
-└── package.json
-```
-
-### Create your first view
-
-#### 1. Add a new view
-
-- Register a tool in `src/server.ts` with a unique name (e.g., `my-view`) using [`registerTool`](https://docs.skybridge.tech/api-reference/register-tool) and a `view` config.
-- Create a matching React component at `src/views/my-view.tsx`. **The file name must match the view name exactly**.
-
-#### 2. Edit views with Hot Module Replacement (HMR)
-
-Edit and save components in `src/views/` — changes will appear instantly inside your App.
-
-#### 3. Edit server code
-
-Modify files in `src/` and refresh the tool list with your MCP Client to see the changes.
-
-### Testing your App
-
-You can test your app locally by using our DevTools UI on `http://localhost:3000` while running the `dev` command.
-
-To connect your app with web clients like ChatGPT or Claude, expose your server on the internet by adding the `--tunnel` flag.
-By enabling the tunnel, you'll also be able to access a playground to chat with your app and a real LLM. Learn more by reading the [test guide](https://docs.skybridge.tech/quickstart/test-your-app).
-
-
-## Deploy to Production
-
-Skybridge is infrastructure vendor agnostic, and your app can be deployed on any cloud platform supporting MCP.
-
-The simplest way to deploy your app is by running the `deploy` command, which will push your MCP server to the [Alpic](https://alpic.ai/) cloud for free.
-
-## Resources
-- [Skybridge Documentation](https://docs.skybridge.tech/)
-- [ChatGPT Plugins Documentation](https://developers.openai.com/plugins)
-- [MCP Apps Documentation](https://github.com/modelcontextprotocol/ext-apps/tree/main)
-- [Model Context Protocol Documentation](https://modelcontextprotocol.io/)
-- [Alpic Documentation](https://docs.alpic.ai/)
+Передайте Нугзару handoff ZIP. Для импорта как плагина выбирайте вложенный
+shopping-cart ZIP, а не весь комплект. React загружается с Alpic.
+Существующий локально изменённый `.app.json` сохранён, но больше не используется
+переносимым manifest и исключён из архивов. Личный TEST 1.0.1 не изменялся.

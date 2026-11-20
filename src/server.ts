@@ -36,13 +36,15 @@ export const app = new Skybridge({
   name: "alpic-openai-app",
   version: "0.0.1",
   skills: true,
+  instructions:
+    "Shopping Cart is a shared demo cart, not a private user cart. Use the installed shopping-assistant skill when available. Browse and compare without changing the cart. Only perform cart writes explicitly requested by the user. Verify writes with get-cart. Scenario Modeler is a React UI preview, not an MCP tool.",
   handler: (server) =>
     server
       .registerTool(
         {
           name: "get-products",
           description:
-            "Get products from Supabase. For shopping workflows, see skill://shopping-assistant/SKILL.md",
+            "Browse up to 20 catalog products with current prices and categories. Opens the React catalog in supported hosts. Use for shopping recommendations; does not change the shared demo cart.",
           annotations: {
             readOnlyHint: true,
           },
@@ -83,7 +85,12 @@ export const app = new Skybridge({
       .registerTool(
         {
           name: "add-to-cart",
-          description: "Add product to saved shopping cart",
+          description: "Add the requested quantity to a product in the shared demo cart. Increments an existing quantity; use only for an explicit addition request. Verify with get-cart.",
+          annotations: {
+            readOnlyHint: false,
+            destructiveHint: false,
+            idempotentHint: false,
+          },
           inputSchema: {
             productId: z.number().int().positive(),
             quantity: z.number().int().min(1),
@@ -155,7 +162,7 @@ export const app = new Skybridge({
       .registerTool(
         {
           name: "get-cart",
-          description: "Get saved shopping cart",
+          description: "Read the shared demo cart with product prices and quantities. Use to show the cart, calculate totals, or verify a requested write.",
           annotations: {
             readOnlyHint: true,
           },
@@ -193,7 +200,12 @@ export const app = new Skybridge({
       .registerTool(
         {
           name: "update-cart-item",
-          description: "Update product quantity in the cart",
+          description: "Set the final positive quantity of an existing product in the shared demo cart. This replaces the quantity; it does not increment it. Use remove-from-cart for removal. Verify with get-cart.",
+          annotations: {
+            readOnlyHint: false,
+            destructiveHint: true,
+            idempotentHint: true,
+          },
           inputSchema: {
             productId: z.number().int().positive(),
             quantity: z.number().int().min(1),
@@ -237,7 +249,7 @@ export const app = new Skybridge({
       .registerTool(
         {
           name: "remove-from-cart",
-          description: "Remove a product from the shopping cart",
+          description: "Remove a specific existing product from the shared demo cart, only when explicitly requested. Verify with get-cart. An absent product returns an error.",
           inputSchema: {
             productId: z.number().int().positive(),
           },
@@ -282,7 +294,7 @@ export const app = new Skybridge({
       .registerTool(
         {
           name: "get-product-details",
-          description: "Get product details and related products",
+          description: "Read details for a catalog productId and up to three related products in the same category. Use before comparing or describing a specific product.",
           inputSchema: {
             productId: z.number().int().positive(),
           },

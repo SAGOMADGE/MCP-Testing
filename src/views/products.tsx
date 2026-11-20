@@ -27,6 +27,7 @@ export default function Products() {
   const [maxPrice, setMaxPrice] = useState("");
   const [isPlannerOpen, setIsPlannerOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // 2. Инструмент добавления товара
   const { callTool: addToCart, isPending: isAdding } =
@@ -80,6 +81,7 @@ export default function Products() {
 
   function handleQuantityChange(productId: number, newQuantity: number) {
     if (newQuantity < 1) return;
+    setActionError(null);
 
     updateCartItem(
       {
@@ -90,9 +92,12 @@ export default function Products() {
         onSuccess: (result) => {
           if (!result.isError && result.structuredContent?.saved) {
             getCart();
+          } else {
+            setActionError("Не удалось изменить количество. Обновите корзину и проверьте результат.");
           }
         },
         onError: (error) => {
+          setActionError("Запрос изменения количества не подтверждён. Обновите корзину перед повтором.");
           console.error(`Ошибка количества: ${error}`);
         },
       },
@@ -100,6 +105,7 @@ export default function Products() {
   }
 
   function handleAddToCart(productId: number) {
+    setActionError(null);
     addToCart(
       {
         productId,
@@ -109,9 +115,12 @@ export default function Products() {
         onSuccess: (result) => {
           if (!result.isError && result.structuredContent?.saved) {
             getCart();
+          } else {
+            setActionError("Не удалось добавить товар. Обновите корзину и проверьте результат.");
           }
         },
         onError: (error) => {
+          setActionError("Добавление не подтверждено. Обновите корзину перед повтором, чтобы не добавить товар дважды.");
           console.error("Ошибка добавления:", error);
         },
       },
@@ -119,15 +128,19 @@ export default function Products() {
   }
 
   function handleRemoveFromCart(productId: number) {
+    setActionError(null);
     removeFromCart(
       { productId },
       {
         onSuccess: (result) => {
           if (!result.isError && result.structuredContent?.removed) {
             getCart();
+          } else {
+            setActionError("Не удалось удалить товар. Обновите корзину и проверьте результат.");
           }
         },
         onError: (error) => {
+          setActionError("Удаление не подтверждено. Обновите корзину перед повтором.");
           console.error("Ошибка удаления:", error);
         },
       },
@@ -164,6 +177,8 @@ export default function Products() {
   return (
     <main className="shopping-app" data-theme={theme}>
       <h2 className="shop-title">Каталог товаров</h2>
+      <p className="shop-muted">Демо: корзина общая для всех пользователей.</p>
+      {actionError && <p className="shop-empty" role="alert">{actionError}</p>}
       <CatalogFilters
         searchQuery={searchQuery}
         selectedCategory={selectedCategory}

@@ -1,0 +1,92 @@
+{
+  "checkedDatesMoscow": [
+    "2026-11-19",
+    "2026-11-20"
+  ],
+  "build": "PASS",
+  "typecheck": "PASS",
+  "unitTests": 11,
+  "unitTestsStatus": "PASS",
+  "remote": {
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "initialize",
+        "status": "PASS"
+      },
+      {
+        "name": "tools/list",
+        "status": "PASS"
+      },
+      {
+        "name": "get-products",
+        "status": "PASS"
+      },
+      {
+        "name": "get-product-details",
+        "status": "PASS"
+      },
+      {
+        "name": "get-cart",
+        "status": "PASS"
+      },
+      {
+        "name": "React resource and hosted assets",
+        "status": "PASS"
+      }
+    ],
+    "writesExecuted": false
+  },
+  "codex": {
+    "version": "codex-cli 0.169.0-alpha.11.1",
+    "status": "PASS",
+    "checks": [
+      {
+        "name": "marketplace add",
+        "status": "PASS"
+      },
+      {
+        "name": "plugin install",
+        "status": "PASS"
+      },
+      {
+        "name": "plugin list",
+        "status": "PASS"
+      },
+      {
+        "name": "app-server plugin/read",
+        "status": "PASS"
+      },
+      {
+        "name": "installed Skill discovery and content",
+        "status": "PASS"
+      },
+      {
+        "name": "Codex MCP discovery",
+        "status": "PASS"
+      },
+      {
+        "name": "Codex get-products execution",
+        "status": "PASS"
+      }
+    ],
+    "writesExecuted": false,
+    "modelInference": false
+  },
+  "productionAudit": {
+    "info": 0,
+    "low": 0,
+    "moderate": 4,
+    "high": 0,
+    "critical": 0,
+    "total": 4
+  },
+  "notVerified": [
+    "second-account ChatGPT install and activation",
+    "visual React render in this session",
+    "mobile",
+    "Claude",
+    "production writes",
+    "model-driven eval"
+  ]
+}
