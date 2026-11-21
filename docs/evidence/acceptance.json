@@ -1,12 +1,29 @@
 {
   "checkedDatesMoscow": [
     "2026-11-19",
-    "2026-11-20"
+    "2026-11-20",
+    "2026-11-21"
   ],
   "build": "PASS",
   "typecheck": "PASS",
-  "unitTests": 11,
+  "unitTests": 14,
   "unitTestsStatus": "PASS",
+  "applicationCommit": "5bb9411759c538d74f33ad0a8b5c8615738f85a6",
+  "frontendRegressionTests": {
+    "count": 3,
+    "status": "PASS",
+    "coverage": ["per-product loading", "immediate duplicate prevention", "concurrent out-of-order completion", "MCP and transport errors", "retry after completion"],
+    "productionWritesExecuted": false
+  },
+  "productionBundleVerification": {
+    "checkedDateMoscow": "2026-11-20",
+    "commit": "5bb9411759c538d74f33ad0a8b5c8615738f85a6",
+    "deploymentStatus": "deployed",
+    "matchesLocalBytes": true,
+    "sha256": "e4bb0ed0a00c08c61fa0834ab0d248cdc934df7d34d1e221f63ffa330815e27b",
+    "toolCallsExecuted": 0
+  },
+  "historicalChecksNote": "remote, codex and productionAudit below were checked on 2026-11-19/20, not rerun for final documentation packaging on 2026-11-21",
   "remote": {
     "status": "PASS",
     "checks": [

@@ -27,8 +27,8 @@ UI зависит от поддержки MCP Apps конкретным граф
 Репозиторий тоже содержит `.agents/plugins/marketplace.json`: после получения
 обновлённой ветки можно зарегистрировать его корень через
 `codex plugin marketplace add .`. Не подключайте несколько копий одного marketplace.
-Для установки из GitHub используйте ветку `delivery/nugzar-portable-plugin`
-репозитория `SAGOMADGE/MCP-Testing`; `main` не содержит эту сдачу.
+Для установки из GitHub используйте актуальный `main` репозитория
+`SAGOMADGE/MCP-Testing`: PR №2 объединён, исправление кнопок также в `main`.
 [Формат и marketplace](https://developers.openai.com/plugins/build/plugins).
 
 ## Резерв: отдельные MCP + Skill

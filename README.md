@@ -26,9 +26,9 @@ Node.js 24+, `npm ci`. В PowerShell при блокировке `npm.ps1` ис�
 `DEMO_CART_ID` из существующего окружения. Не включайте значения в плагин или Git.
 
 ```sh
+npm run build
 npm run typecheck
 npm test
-npm run build
 npm run build:check
 npm run plugin:check
 npm run test:remote
@@ -38,6 +38,9 @@ npm run test:codex
 ```
 
 `test` не использует `.env`, сеть или платные API: Supabase заменён моделью в памяти.
+Всего 14 тестов; 3 React-теста проверяют загрузку добавления по `productId`,
+конкурентные запросы, повторные клики и восстановление кнопок после ошибок.
+На чистой копии build сначала генерирует типы `.skybridge/views.d.ts` для typecheck.
 `test:remote` вызывает только инструменты чтения и читает React-ресурс.
 `evals` — отдельная проверка платной моделью, требует `RUN_MODEL_EVALS=1` и
 `ANTHROPIC_API_KEY`; записи блокируются middleware. Она не входит в обычные тесты.
